@@ -17,7 +17,11 @@ int gameStartTime = 0;
 int gameScore = 0;
 int gameInProgress = 0;
 
-float distanceSensorValue =0.0;
+//a4 is serial clock
+// a5 is data
+
+
+float distanceSensorValue = 0.0;
 
 
 int bluetoothTx = 6;  // TX-O pin of bluetooth mate, Arduino D2
