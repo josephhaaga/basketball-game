@@ -12,6 +12,13 @@ Dan Coen, Max Friedman, Joseph Haaga
 // LCD setup
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
+// Game Variables
+int gameStartTime = 0;
+int gameScore = 0;
+int gameInProgress = 0;
+
+float distanceSensorValue =0.0;
+
 
 int bluetoothTx = 6;  // TX-O pin of bluetooth mate, Arduino D2
 int bluetoothRx = 7;  // RX-I pin of bluetooth mate, Arduino D3
@@ -109,11 +116,11 @@ void setup(void) {
   // 115200 can be too fast at times for NewSoftSerial to relay the data reliably
   bluetooth.begin(9600);  // Start bluetooth serial at 9600
   //if(EEPROM.read(0) == 255){
-     EEPROM.write(0,25);
-     EEPROM.write(1,20);
-     EEPROM.write(2,15);
-     EEPROM.write(3,10);
-     EEPROM.write(4,5);
+//     EEPROM.write(0,0);
+//     EEPROM.write(1,0);
+//     EEPROM.write(2,0);
+//     EEPROM.write(3,0);
+//     EEPROM.write(4,0);
     //}
   //pinMode(LEDpin, OUTPUT);
   lcd.begin(8, 1);
@@ -122,13 +129,31 @@ void setup(void) {
 }
  
 void loop(void) {
+  int seconds = getSeconds();
+  distanceSensorValue = analogRead(A2) * 5 /1023.0;
   fsrReading = analogRead(fsrAnalogPin);
   if (fsrReading > 49){
     //Serial.print("Analog reading = ");
     //Serial.println(fsrReading);
-    Serial.print("sweet shot");
-    bluetooth.println("sweet shot");
+    if(gameInProgress==1){
+      if(distanceSensorValue<2){
+        Serial.print("sweet shot");
+        bluetooth.println("sweet shot");
+        gameScore++;
+      }else{
+        Serial.print("$wi$h");
+        bluetooth.println("3 pointer!!");
+        gameScore+=3;
+      }
+    }else{
+      Serial.print("starting new game...");
+      bluetooth.println("starting new game...");
+      gameInProgress=1;
+      gameStartTime=seconds;
+    }
     //Serial.print("$$$");
+    
+    
     delay(500);
     /*Serial.println(EEPROM.read(0));
     Serial.println(EEPROM.read(1));
@@ -138,78 +163,22 @@ void loop(void) {
     //Serial.println(EEPROM.read(1),DEC);
     */
     
-    lcd.setCursor(0,0);
-    int seconds = getSeconds();
-    if (seconds > 30) {
-      Serial.println(60 - seconds, DEC);
-      lcdDisplayText(String(60 - seconds));
-    } else {
-      Serial.println(30 - seconds, DEC);
-      lcdDisplayText(String(30 - seconds));
-    }
-    delay(1000);
   }
-  //bluetooth.print("working");
- 
-  // we'll need to change the range from the analog reading (0-1023) down to the range
-  // used by analogWrite (0-255) with map!
-  //LEDbrightness = map(fsrReading, 0, 1023, 0, 255);
-  // LED gets brighter the harder you press
-  //analogWrite(LEDpin, LEDbrightness);
- 
-  //delay(500);
-  /*if(bluetooth.available())  // If the bluetooth sent any characters
-  {
-    // Send any characters the bluetooth prints to the serial monitor
-    Serial.print((char)bluetooth.read());  
-  }
-  if(Serial.available())  // If stuff was typed in the serial monitor
-  {
-    // Send any characters the Serial monitor prints to the bluetooth
-    bluetooth.print((char)Serial.read());
+  if(((gameStartTime+30)%60)&&gameInProgress){
+   // game has run out of time
+   gameInProgress=0;
+   // write score to leaderboard
+     
   }
   
- // bluetooth.print((char)Serial.read());
- */
-  
-}
-
-
-
-/*#include <SoftwareSerial.h>  
-
-int bluetoothTx = 2;  // TX-O pin of bluetooth mate, Arduino D2
-int bluetoothRx = 3;  // RX-I pin of bluetooth mate, Arduino D3
-
-SoftwareSerial bluetooth(bluetoothTx, bluetoothRx);
-
-void setup()
-{
-  Serial.begin(9600);  // Begin the serial monitor at 9600bps
-
-  bluetooth.begin(115200);  // The Bluetooth Mate defaults to 115200bps
-  bluetooth.print("$");  // Print three times individually
-  bluetooth.print("$");
-  bluetooth.print("$");  // Enter command mode
-  delay(100);  // Short delay, wait for the Mate to send back CMD
-  bluetooth.println("U,9600,N");  // Temporarily Change the baudrate to 9600, no parity
-  // 115200 can be too fast at times for NewSoftSerial to relay the data reliably
-  bluetooth.begin(9600);  // Start bluetooth serial at 9600
-}
-
-void loop()
-{
-  if(bluetooth.available())  // If the bluetooth sent any characters
-  {
-    // Send any characters the bluetooth prints to the serial monitor
-    Serial.print((char)bluetooth.read());  
+  lcd.setCursor(0,0);
+  if (seconds > 30) {
+    Serial.println(60 - seconds, DEC);
+    lcdDisplayText(String(60 - seconds));
+  } else {
+    Serial.println(30 - seconds, DEC);
+    lcdDisplayText(String(30 - seconds));
   }
-  if(Serial.available())  // If stuff was typed in the serial monitor
-  {
-    // Send any characters the Serial monitor prints to the bluetooth
-    bluetooth.print((char)Serial.read());
-  }
-  // and loop forever and ever!
+  delay(1000);
 }
-*/
 
