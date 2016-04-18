@@ -137,6 +137,17 @@ void loop(void) {
     Serial.println(EEPROM.read(4));
     //Serial.println(EEPROM.read(1),DEC);
     */
+    
+    lcd.setCursor(0,0);
+    int seconds = getSeconds();
+    if (seconds > 30) {
+      Serial.println(60 - seconds, DEC);
+      lcdDisplayText(String(60 - seconds));
+    } else {
+      Serial.println(30 - seconds, DEC);
+      lcdDisplayText(String(30 - seconds));
+    }
+    delay(1000);
   }
   //bluetooth.print("working");
  
