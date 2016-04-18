@@ -116,6 +116,9 @@ void setup(void) {
      EEPROM.write(4,5);
     //}
   //pinMode(LEDpin, OUTPUT);
+  lcd.begin(8, 1);
+  Wire.begin();
+  setDS3231time(00,0,0,7,27,12,14);
 }
  
 void loop(void) {
