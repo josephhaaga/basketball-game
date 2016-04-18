@@ -133,27 +133,32 @@ void setup(void) {
 }
  
 void loop(void) {
-  int seconds = getSeconds();
-  distanceSensorValue = analogRead(A2) * 5 /1023.0;
+  bluetooth.write("hey");
+  int seconds = (int) getSeconds();
   fsrReading = analogRead(fsrAnalogPin);
   if (fsrReading > 49){
+    distanceSensorValue = analogRead(A2) * 5 /1023.0;
     //Serial.print("Analog reading = ");
     //Serial.println(fsrReading);
     if(gameInProgress==1){
-      if(distanceSensorValue<2){
-        Serial.print("sweet shot");
-        bluetooth.println("sweet shot");
-        gameScore++;
+      if(distanceSensorValue<0.5){
+        Serial.print("sweet shot\n");
+        bluetooth.println("sweet shot\n");
+        gameScore+=2;
       }else{
         Serial.print("$wi$h");
         bluetooth.println("3 pointer!!");
         gameScore+=3;
       }
+      Serial.print("\nSensor Value:");
+      Serial.print(distanceSensorValue);
+      Serial.print("\n");
     }else{
       Serial.print("starting new game...");
       bluetooth.println("starting new game...");
       gameInProgress=1;
-      gameStartTime=seconds;
+      gameStartTime=60;
+      setDS3231time(00,0,0,7,27,12,14);
     }
     //Serial.print("$$$");
     
@@ -168,7 +173,7 @@ void loop(void) {
     */
     
   }
-  if(((gameStartTime+30)%60)&&gameInProgress){
+  if(gameStartTime-seconds<=0){
    // game has run out of time
    gameInProgress=0;
    // write score to leaderboard
@@ -176,13 +181,15 @@ void loop(void) {
   }
   
   lcd.setCursor(0,0);
-  if (seconds > 30) {
+  /*if (gameStartTime > 30) {
     Serial.println(60 - seconds, DEC);
     lcdDisplayText(String(60 - seconds));
   } else {
     Serial.println(30 - seconds, DEC);
     lcdDisplayText(String(30 - seconds));
   }
-  delay(1000);
+  */
+  lcdDisplayText(String(seconds));
+  //delay(1000);
 }
 
